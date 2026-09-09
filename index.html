@@ -562,6 +562,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
   var ctaForm = document.getElementById('ctaForm');
   var ctaIframe = document.getElementById('ctaIframe');
   var TALLY_PRICE_PARAM = 'prijs'; // must match the field's "Prefill from URL" key in Tally
+  var TALLY_TERM_PARAM = 'looptijd'; // must match the field's "Prefill from URL" key in Tally
 
   function buildTallyUrl(){
     var price = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
@@ -569,12 +570,13 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
       'hideTitle=1',
       'transparentBackground=1',
       'dynamicHeight=1',
-      TALLY_PRICE_PARAM + '=' + encodeURIComponent(Math.round(price))
+      TALLY_PRICE_PARAM + '=' + encodeURIComponent(Math.round(price)),
+      TALLY_TERM_PARAM + '=' + encodeURIComponent(currentTerm + ' maanden')
     ];
     return 'https://tally.so/embed/pbENgb?' + params.join('&');
   }
 
-  var ctaLoadedPrice = null;
+  var ctaLoadedKey = null;
 
   if (ctaButton && ctaForm) {
     ctaButton.addEventListener('click', function(){
@@ -583,7 +585,8 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
 
       if (isOpen && ctaIframe) {
         var currentPrice = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
-        if (ctaLoadedPrice === null || ctaLoadedPrice !== currentPrice) {
+        var currentKey = currentPrice + '|' + currentTerm;
+        if (ctaLoadedKey === null || ctaLoadedKey !== currentKey) {
           var tallyUrl = buildTallyUrl();
           if (typeof Tally !== 'undefined' && Tally.loadEmbeds) {
             ctaIframe.setAttribute('data-tally-src', tallyUrl);
@@ -591,7 +594,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
           } else {
             ctaIframe.src = tallyUrl;
           }
-          ctaLoadedPrice = currentPrice;
+          ctaLoadedKey = currentKey;
         }
       }
 
