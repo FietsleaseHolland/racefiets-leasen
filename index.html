@@ -48,6 +48,28 @@
     box-shadow:0 2px 24px rgba(0,0,0,0.06);
     overflow:hidden;
   }
+  .calc-title-block{
+    grid-column:1 / -1;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    padding:2rem 2.5rem 0;
+  }
+  .calc-title-bar{
+    width:4px;
+    border-radius:2px;
+    background:var(--green);
+    align-self:stretch;
+    flex-shrink:0;
+  }
+  .calc-title{
+    margin:0;
+    font-size:23px;
+    font-weight:800;
+    color:var(--green-vdark);
+    letter-spacing:-0.02em;
+    line-height:1.25;
+  }
   .col-in{
     padding:2.5rem;
     border-right:1px solid #f0f0f0;
@@ -260,7 +282,7 @@
     align-items:flex-start;
     gap:12px;
     padding-top:1.25rem;
-    margin-top:1.75rem;
+    margin-top:auto;
     border-top:1px solid var(--green-line);
     position:relative;
     z-index:1;
@@ -339,6 +361,8 @@
 
   @media (max-width:640px){
     body{ padding:0; }
+    .calc-title-block{ padding:1.75rem 1.75rem 0; gap:10px; }
+    .calc-title{ font-size:19px; }
     .calc{ grid-template-columns:1fr; border-radius:16px; }
     .cta-block{ border-radius:16px; margin-top:12px; }
     .col-in{ border-right:none; border-bottom:1px solid #f0f0f0; padding:1.75rem; }
@@ -351,6 +375,12 @@
 <body>
 
 <div class="calc">
+  <div class="calc-title-block">
+    <div class="calc-title-bar"></div>
+    <div>
+      <h1 class="calc-title">Lease je racefiets</h1>
+    </div>
+  </div>
   <div class="col-in">
     <div class="section-label">Jouw racefiets</div>
 
@@ -408,7 +438,7 @@
           <circle cx="8" cy="8" r="8" fill="#c6c6c6"/>
           <rect x="4.8" y="7.2" width="6.4" height="1.6" rx="0.8" fill="white"/>
         </svg>
-        <span><strong>Onderhoud en reparatie.</strong> Niet inbegrepen, voor eigen rekening. Bedoeld voor de hobbyist die zelf voor zijn fiets zorgt.</span>
+        <span><strong>Onderhoud en reparatie.</strong> Niet inbegrepen, voor eigen rekening.</span>
       </div>
     </div>
   </div>
