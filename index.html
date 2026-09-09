@@ -574,18 +574,24 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     return 'https://tally.so/embed/pbENgb?' + params.join('&');
   }
 
+  var ctaLoadedPrice = null;
+
   if (ctaButton && ctaForm) {
     ctaButton.addEventListener('click', function(){
       var isOpen = ctaForm.classList.toggle('open');
       ctaButton.classList.toggle('open', isOpen);
 
-      if (isOpen && ctaIframe && !ctaIframe.src) {
-        var tallyUrl = buildTallyUrl();
-        if (typeof Tally !== 'undefined' && Tally.loadEmbeds) {
-          ctaIframe.setAttribute('data-tally-src', tallyUrl);
-          Tally.loadEmbeds();
-        } else {
-          ctaIframe.src = tallyUrl;
+      if (isOpen && ctaIframe) {
+        var currentPrice = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
+        if (ctaLoadedPrice === null || ctaLoadedPrice !== currentPrice) {
+          var tallyUrl = buildTallyUrl();
+          if (typeof Tally !== 'undefined' && Tally.loadEmbeds) {
+            ctaIframe.setAttribute('data-tally-src', tallyUrl);
+            Tally.loadEmbeds();
+          } else {
+            ctaIframe.src = tallyUrl;
+          }
+          ctaLoadedPrice = currentPrice;
         }
       }
 
