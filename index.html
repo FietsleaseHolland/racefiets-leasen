@@ -582,6 +582,17 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     }
   }
 
+  // The parent page's embed script (flc-embed.js) passes its own URL via
+  // ?pageurl=, which is reliable regardless of the browser's referrer policy.
+  // document.referrer is kept only as a fallback for older/manual embeds.
+  function getSourcePageUrl(){
+    try {
+      var fromQuery = new URLSearchParams(window.location.search).get('pageurl');
+      if (fromQuery) return fromQuery;
+    } catch (e) {}
+    return document.referrer || '';
+  }
+
   function buildTallyUrl(){
     var price = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
     var params = [
@@ -591,11 +602,10 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
       TALLY_PRICE_PARAM + '=' + encodeURIComponent(Math.round(price)),
       TALLY_TERM_PARAM + '=' + encodeURIComponent(currentTerm + ' maanden')
     ];
-    // Referrer = the dealer page the calculator iframe is embedded on.
-    // Only available if the browser actually sends it (can be empty).
-    if (document.referrer) {
-      params.push(TALLY_PAGE_PARAM + '=' + encodeURIComponent(document.referrer));
-      var guess = guessModelFromUrl(document.referrer);
+    var sourceUrl = getSourcePageUrl();
+    if (sourceUrl) {
+      params.push(TALLY_PAGE_PARAM + '=' + encodeURIComponent(sourceUrl));
+      var guess = guessModelFromUrl(sourceUrl);
       if (guess) {
         params.push(TALLY_MODEL_PARAM + '=' + encodeURIComponent(guess));
       }
