@@ -295,9 +295,52 @@
   .lease-item--no strong{ color:#555555; }
   .lease-icon{ flex-shrink:0; margin-top:1px; }
 
+  .cta-block{
+    max-width:840px;
+    margin:16px auto 0;
+    background:var(--white);
+    border-radius:20px;
+    border:1px solid #e6e6e6;
+    box-shadow:0 2px 24px rgba(0,0,0,0.06);
+    overflow:hidden;
+  }
+  .cta-button{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:16px 24px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:#fff;
+    background:var(--green);
+    border:none;
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .cta-button:hover{ background:var(--green-dark); }
+  .cta-button svg{ transition:transform 0.2s; flex-shrink:0; }
+  .cta-button.open svg{ transform:rotate(180deg); }
+
+  .cta-form{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.35s ease;
+  }
+  .cta-form.open{ max-height:2400px; }
+  .cta-form iframe{
+    display:block;
+    width:100%;
+    border:none;
+  }
+
   @media (max-width:640px){
     body{ padding:0; }
     .calc{ grid-template-columns:1fr; border-radius:16px; }
+    .cta-block{ border-radius:16px; margin-top:12px; }
     .col-in{ border-right:none; border-bottom:1px solid #f0f0f0; padding:1.75rem; }
     .col-out{ padding:1.75rem; }
     .hero-amount{ font-size:44px; }
@@ -373,7 +416,7 @@
   <div class="col-out">
     <div class="hero-label">Maandbedrag</div>
     <div class="hero-amount" id="heroAmount">€0,00</div>
-    <div class="hero-sub" id="heroSub">bij 36 maanden looptijd</div>
+    <div class="hero-sub" id="heroSub">incl. btw</div>
 
     <div class="divider"></div>
 
@@ -396,6 +439,22 @@
     </div>
   </div>
 </div>
+
+<div class="cta-block">
+  <button type="button" class="cta-button" id="ctaButton">
+    <span>Vraag deze lease aan</span>
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="cta-form" id="ctaForm">
+    <iframe data-tally-src="https://onboarding.fietsleaseholland.nl/r/racefiets-leasen?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="Racefiets leasen aanvragen"></iframe>
+  </div>
+</div>
+
+<script>
+var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}
+</script>
 
 <script>
 (function(){
@@ -444,7 +503,7 @@
     var monthly = currentTerm === 36 ? row[1] : row[2];
 
     heroAmount.textContent = fmtEuro(monthly, 2);
-    heroSub.textContent = 'bij ' + currentTerm + ' maanden looptijd';
+    heroSub.textContent = 'incl. btw';
     rowPrice.textContent = fmtEuro(row[0], 0);
     rowTerm.textContent = currentTerm + ' maanden';
 
@@ -476,9 +535,9 @@
   });
 
   function reportHeight(){
-    var calc = document.querySelector('.calc');
-    if (!calc) return;
-    var h = Math.ceil(calc.getBoundingClientRect().bottom) + 8;
+    var last = document.querySelector('.cta-block') || document.querySelector('.calc');
+    if (!last) return;
+    var h = Math.ceil(last.getBoundingClientRect().bottom) + 8;
     try { window.parent.postMessage({ type: 'flc-height', height: h }, '*'); } catch(e) {}
   }
 
@@ -494,6 +553,29 @@
   // Fallback in case the observer misses it or loads slowly.
   setTimeout(reportHeight, 800);
   setTimeout(reportHeight, 2000);
+
+  // Tally form: toggle open/closed, and keep the reported height in sync
+  // while its iframe resizes itself (Tally sets the iframe's height via
+  // inline style once the form content is measured).
+  var ctaButton = document.getElementById('ctaButton');
+  var ctaForm = document.getElementById('ctaForm');
+  var ctaIframe = ctaForm ? ctaForm.querySelector('iframe') : null;
+
+  if (ctaButton && ctaForm) {
+    ctaButton.addEventListener('click', function(){
+      var isOpen = ctaForm.classList.toggle('open');
+      ctaButton.classList.toggle('open', isOpen);
+      reportHeight();
+      setTimeout(reportHeight, 300);
+      setTimeout(reportHeight, 900);
+      setTimeout(reportHeight, 1800);
+    });
+  }
+
+  if (ctaIframe && window.MutationObserver) {
+    var ctaObserver = new MutationObserver(function(){ reportHeight(); });
+    ctaObserver.observe(ctaIframe, { attributes: true, attributeFilter: ['style', 'height'] });
+  }
 
   update();
 })();
