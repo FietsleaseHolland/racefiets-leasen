@@ -448,7 +448,7 @@
     </svg>
   </button>
   <div class="cta-form" id="ctaForm">
-    <iframe data-tally-src="https://tally.so/embed/pbENgb?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="Racefiets leasen aanvragen"></iframe>
+    <iframe id="ctaIframe" loading="lazy" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="Racefiets leasen aanvragen"></iframe>
   </div>
 </div>
 
@@ -554,17 +554,41 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
   setTimeout(reportHeight, 800);
   setTimeout(reportHeight, 2000);
 
-  // Tally form: toggle open/closed, and keep the reported height in sync
-  // while its iframe resizes itself (Tally sets the iframe's height via
-  // inline style once the form content is measured).
+  // Tally form: toggle open/closed, load the form with the current bike
+  // price prefilled the first time it's opened, and keep the reported
+  // height in sync while its iframe resizes itself (Tally sets the
+  // iframe's height via inline style once the form content is measured).
   var ctaButton = document.getElementById('ctaButton');
   var ctaForm = document.getElementById('ctaForm');
-  var ctaIframe = ctaForm ? ctaForm.querySelector('iframe') : null;
+  var ctaIframe = document.getElementById('ctaIframe');
+  var TALLY_PRICE_PARAM = 'prijs'; // must match the field's "Prefill from URL" key in Tally
+
+  function buildTallyUrl(){
+    var price = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
+    var params = [
+      'hideTitle=1',
+      'transparentBackground=1',
+      'dynamicHeight=1',
+      TALLY_PRICE_PARAM + '=' + encodeURIComponent(Math.round(price))
+    ];
+    return 'https://tally.so/embed/pbENgb?' + params.join('&');
+  }
 
   if (ctaButton && ctaForm) {
     ctaButton.addEventListener('click', function(){
       var isOpen = ctaForm.classList.toggle('open');
       ctaButton.classList.toggle('open', isOpen);
+
+      if (isOpen && ctaIframe && !ctaIframe.src) {
+        var tallyUrl = buildTallyUrl();
+        if (typeof Tally !== 'undefined' && Tally.loadEmbeds) {
+          ctaIframe.setAttribute('data-tally-src', tallyUrl);
+          Tally.loadEmbeds();
+        } else {
+          ctaIframe.src = tallyUrl;
+        }
+      }
+
       reportHeight();
       setTimeout(reportHeight, 300);
       setTimeout(reportHeight, 900);
