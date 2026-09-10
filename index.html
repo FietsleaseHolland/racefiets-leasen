@@ -617,6 +617,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
   var TALLY_TERM_PARAM = 'looptijd'; // must match the field's "Prefill from URL" key in Tally
   var TALLY_PAGE_PARAM = 'paginaurl'; // must match the field's "Prefill from URL" key in Tally
   var TALLY_MODEL_PARAM = 'merkmodel'; // must match the field's "Prefill from URL" key in Tally
+  var TALLY_DEALER_PARAM = 'dealerid'; // must match the field's "Prefill from URL" key in Tally
 
   // Turns the last part of a product URL into a readable guess at merk & model,
   // e.g. https://cormantel.nl/products/bmc-teammachine-01-r-one -> "Bmc Teammachine 01 R One"
@@ -645,6 +646,16 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     return document.referrer || '';
   }
 
+  // Which dealer this iframe was embedded by, set via data-dealer on the
+  // dealer's own iframe tag and passed through by flc-embed.js.
+  function getDealerId(){
+    try {
+      return new URLSearchParams(window.location.search).get('dealerid') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
   function buildTallyUrl(){
     var price = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
     var params = [
@@ -661,6 +672,10 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
       if (guess) {
         params.push(TALLY_MODEL_PARAM + '=' + encodeURIComponent(guess));
       }
+    }
+    var dealerId = getDealerId();
+    if (dealerId) {
+      params.push(TALLY_DEALER_PARAM + '=' + encodeURIComponent(dealerId));
     }
     return 'https://tally.so/embed/pbENgb?' + params.join('&');
   }
