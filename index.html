@@ -578,9 +578,26 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
 
   window.addEventListener('resize', reportHeight);
 
+  // Trustpilot's own script sometimes leaves the widget stuck on its plain
+  // text fallback (no stars) when it sits inside an iframe, because its
+  // automatic DOMContentLoaded scan can race with the script actually
+  // finishing initialization. Forcing a reload via its own API is the
+  // documented fix for that.
+  var tpWidget = document.querySelector('.trustpilot-widget');
+
+  function tryLoadTrustpilot(retriesLeft){
+    if (typeof Trustpilot !== 'undefined' && Trustpilot.loadFromElement && tpWidget) {
+      Trustpilot.loadFromElement(tpWidget, true);
+    } else if (retriesLeft > 0) {
+      setTimeout(function(){ tryLoadTrustpilot(retriesLeft - 1); }, 500);
+    }
+  }
+  if (tpWidget) {
+    tryLoadTrustpilot(8);
+  }
+
   // Trustpilot loads and rewrites the widget div asynchronously, so watch
   // for that and re-report the iframe height once it renders.
-  var tpWidget = document.querySelector('.trustpilot-widget');
   if (tpWidget && window.MutationObserver) {
     var tpObserver = new MutationObserver(function(){ reportHeight(); });
     tpObserver.observe(tpWidget, { childList: true, subtree: true });
