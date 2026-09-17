@@ -391,13 +391,13 @@
 
     <div class="field-block">
       <div class="field-row">
-        <div class="field-label">Aankoopprijs fiets</div>
+        <div class="field-label" id="priceLabel">Aankoopprijs fiets</div>
         <div class="num-box">
           <span>€</span>
-          <input type="number" id="priceInput" value="3999" min="3999" max="14999" step="50">
+          <input type="number" id="priceInput" value="3999" min="3999" max="14999" step="50" aria-labelledby="priceLabel">
         </div>
       </div>
-      <input type="range" id="priceSlider" min="3999" max="14999" step="50" value="3999">
+      <input type="range" id="priceSlider" min="3999" max="14999" step="50" value="3999" aria-labelledby="priceLabel">
       <div class="range-labels">
         <span>€3.999</span>
         <span>€14.999</span>
@@ -408,9 +408,9 @@
       <div class="field-row">
         <div class="field-label">Looptijd</div>
       </div>
-      <div class="toggle" id="termToggle">
-        <button type="button" data-term="36">36 maanden</button>
-        <button type="button" data-term="48" class="active">48 maanden</button>
+      <div class="toggle" id="termToggle" role="group" aria-label="Looptijd">
+        <button type="button" data-term="36" aria-pressed="false">36 maanden</button>
+        <button type="button" data-term="48" class="active" aria-pressed="true">48 maanden</button>
       </div>
     </div>
 
@@ -418,28 +418,28 @@
 
     <div class="lease-list">
       <div class="lease-item">
-        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="8" cy="8" r="8" fill="#669933"/>
           <path d="M4.6 8.3L6.8 10.4L11.4 5.6" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span><strong>Verzekering tegen schade en diefstal.</strong> Inbegrepen in het maandbedrag.</span>
       </div>
       <div class="lease-item">
-        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="8" cy="8" r="8" fill="#669933"/>
           <path d="M4.6 8.3L6.8 10.4L11.4 5.6" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span><strong>Carbon module.</strong> Aanvullende dekking specifiek voor carbon onderdelen.</span>
       </div>
       <div class="lease-item">
-        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="lease-icon lease-icon--yes" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="8" cy="8" r="8" fill="#669933"/>
           <path d="M4.6 8.3L6.8 10.4L11.4 5.6" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span><strong>Wedstrijddekking.</strong> Ook verzekerd tijdens wedstrijden.</span>
       </div>
       <div class="lease-item lease-item--no">
-        <svg class="lease-icon lease-icon--no" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="lease-icon lease-icon--no" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="8" cy="8" r="8" fill="#c6c6c6"/>
           <rect x="4.8" y="7.2" width="6.4" height="1.6" rx="0.8" fill="white"/>
         </svg>
@@ -478,7 +478,7 @@
 <div class="cta-block">
   <button type="button" class="cta-button" id="ctaButton">
     <span>Vraag vrijblijvend aan</span>
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
@@ -531,8 +531,16 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     return val;
   }
 
+  // Prices here are always whole numbers, so any "." or "," the user types
+  // is a thousands separator (matching how we display "€3.999" ourselves),
+  // never a decimal point. Strip them before parsing, otherwise a native
+  // <input type="number"> reads "8.999" as 8.999, not 8999.
+  function parsePriceValue(raw){
+    return parseFloat(String(raw).replace(/[.,]/g, ''));
+  }
+
   function update(){
-    var raw = parseFloat(priceInput.value);
+    var raw = parsePriceValue(priceInput.value);
     var price = clampPrice(raw);
     var row = lookupRow(price);
     var monthly = currentTerm === 36 ? row[1] : row[2];
@@ -546,12 +554,17 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
   }
 
   priceInput.addEventListener('input', function(){
-    var v = clampPrice(parseFloat(priceInput.value));
-    priceSlider.value = v;
+    var parsed = parsePriceValue(priceInput.value);
+    if (!isNaN(parsed)) {
+      priceSlider.value = clampPrice(parsed);
+    }
     update();
   });
   priceInput.addEventListener('blur', function(){
-    priceInput.value = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
+    var clamped = clampPrice(parsePriceValue(priceInput.value) || MIN_PRICE);
+    var row = lookupRow(clamped);
+    priceInput.value = row[0];
+    priceSlider.value = row[0];
     update();
   });
   priceSlider.addEventListener('input', function(){
@@ -564,8 +577,12 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     if (!btn) return;
     currentTerm = parseInt(btn.getAttribute('data-term'), 10);
     var buttons = termToggle.querySelectorAll('button');
-    buttons.forEach(function(b){ b.classList.remove('active'); });
+    buttons.forEach(function(b){
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     update();
   });
 
@@ -625,7 +642,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     try {
       var path = new URL(url).pathname;
       var segments = path.split('/').filter(Boolean);
-      var slug = segments[segments.length - 1] || '';
+      var slug = decodeURIComponent(segments[segments.length - 1] || '');
       var words = slug.split(/[-_]+/).filter(Boolean);
       return words.map(function(w){
         return w.charAt(0).toUpperCase() + w.slice(1);
@@ -638,12 +655,26 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
   // The parent page's embed script (flc-embed.js) passes its own URL via
   // ?pageurl=, which is reliable regardless of the browser's referrer policy.
   // document.referrer is kept only as a fallback for older/manual embeds.
-  function getSourcePageUrl(){
+  // Domains that are clearly not a dealer's own product page (our own
+  // hosting, GitHub's UI, Tally itself). If the source URL points here,
+  // treat it as unusable rather than risk a nonsense guess like "Github Pages".
+  function isUsableSourceUrl(url){
     try {
-      var fromQuery = new URLSearchParams(window.location.search).get('pageurl');
-      if (fromQuery) return fromQuery;
+      var host = new URL(url).hostname.toLowerCase();
+      var excluded = ['github.com', 'github.io', 'githubusercontent.com', 'tally.so'];
+      return !excluded.some(function(d){ return host === d || host.endsWith('.' + d); });
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getSourcePageUrl(){
+    var url = '';
+    try {
+      url = new URLSearchParams(window.location.search).get('pageurl') || '';
     } catch (e) {}
-    return document.referrer || '';
+    if (!url) url = document.referrer || '';
+    return isUsableSourceUrl(url) ? url : '';
   }
 
   // Which dealer this iframe was embedded by, set via data-dealer on the
@@ -656,8 +687,20 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     }
   }
 
+  // Whether this embed sits on a product page (data-page-type="product",
+  // the default) or a general page (data-page-type="overig"). On a general
+  // page the URL slug has nothing to do with a specific bike, so we skip
+  // the merk/model guess entirely rather than show something nonsensical.
+  function getPageType(){
+    try {
+      return new URLSearchParams(window.location.search).get('pagetype') || 'product';
+    } catch (e) {
+      return 'product';
+    }
+  }
+
   function buildTallyUrl(){
-    var price = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
+    var price = clampPrice(parsePriceValue(priceInput.value) || MIN_PRICE);
     var params = [
       'hideTitle=1',
       'transparentBackground=1',
@@ -668,9 +711,11 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     var sourceUrl = getSourcePageUrl();
     if (sourceUrl) {
       params.push(TALLY_PAGE_PARAM + '=' + encodeURIComponent(sourceUrl));
-      var guess = guessModelFromUrl(sourceUrl);
-      if (guess) {
-        params.push(TALLY_MODEL_PARAM + '=' + encodeURIComponent(guess));
+      if (getPageType() === 'product') {
+        var guess = guessModelFromUrl(sourceUrl);
+        if (guess) {
+          params.push(TALLY_MODEL_PARAM + '=' + encodeURIComponent(guess));
+        }
       }
     }
     var dealerId = getDealerId();
@@ -688,7 +733,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
       ctaButton.classList.toggle('open', isOpen);
 
       if (isOpen && ctaIframe) {
-        var currentPrice = clampPrice(parseFloat(priceInput.value) || MIN_PRICE);
+        var currentPrice = clampPrice(parsePriceValue(priceInput.value) || MIN_PRICE);
         var currentKey = currentPrice + '|' + currentTerm;
         if (ctaLoadedKey === null || ctaLoadedKey !== currentKey) {
           var tallyUrl = buildTallyUrl();
@@ -713,6 +758,21 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     var ctaObserver = new MutationObserver(function(){ reportHeight(); });
     ctaObserver.observe(ctaIframe, { attributes: true, attributeFilter: ['style', 'height'] });
   }
+
+  // If the dealer's product page passed its own price via data-price on
+  // the iframe, use that as the starting point instead of the default.
+  (function applyStartPrice(){
+    try {
+      var startPrice = new URLSearchParams(window.location.search).get('startprijs');
+      if (startPrice) {
+        var parsed = clampPrice(parsePriceValue(startPrice));
+        if (!isNaN(parsed)) {
+          priceInput.value = parsed;
+          priceSlider.value = parsed;
+        }
+      }
+    } catch (e) {}
+  })();
 
   update();
 })();
