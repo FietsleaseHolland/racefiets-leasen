@@ -142,12 +142,6 @@
     width:74px;
     text-align:right;
     color:var(--black);
-    -moz-appearance:textfield;
-  }
-  .num-box input::-webkit-outer-spin-button,
-  .num-box input::-webkit-inner-spin-button{
-    -webkit-appearance:none;
-    margin:0;
   }
   .num-box input:focus{ outline:none; }
 
@@ -296,11 +290,7 @@
   }
   .brand-mark .trustpilot-widget{
     width:100%;
-    max-width:220px;
-    font-family:initial;
-    font-weight:initial;
-    font-size:initial;
-    color:initial;
+    max-width:260px;
   }
 
   .lease-list{
@@ -394,7 +384,7 @@
         <div class="field-label" id="priceLabel">Aankoopprijs fiets</div>
         <div class="num-box">
           <span>€</span>
-          <input type="number" id="priceInput" value="3999" min="3999" max="14999" step="50" aria-labelledby="priceLabel">
+          <input type="text" inputmode="numeric" autocomplete="off" id="priceInput" value="3999" aria-labelledby="priceLabel">
         </div>
       </div>
       <input type="range" id="priceSlider" min="3999" max="14999" step="50" value="3999" aria-labelledby="priceLabel">
@@ -476,7 +466,7 @@
 </div>
 
 <div class="cta-block">
-  <button type="button" class="cta-button" id="ctaButton">
+  <button type="button" class="cta-button" id="ctaButton" aria-expanded="false" aria-controls="ctaForm">
     <span>Vraag vrijblijvend aan</span>
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -731,6 +721,7 @@ var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=t
     ctaButton.addEventListener('click', function(){
       var isOpen = ctaForm.classList.toggle('open');
       ctaButton.classList.toggle('open', isOpen);
+      ctaButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
       if (isOpen && ctaIframe) {
         var currentPrice = clampPrice(parsePriceValue(priceInput.value) || MIN_PRICE);
